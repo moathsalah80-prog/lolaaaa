@@ -1,0 +1,646 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>مفاجأة لوجي الحصرية 💖</title>
+    <link href="https://fonts.googleapis.com/css2?family=Lilita+One&family=Tajawal:wght@400;700;900&display=swap" rel="stylesheet">
+    <style>
+        /* ================= إعدادات التوافق والمقاسات لجهاز Galaxy A15 ================= */
+        * { margin: 0; padding: 0; box-sizing: border-box; -webkit-tap-highlight-color: transparent; }
+        body, html { 
+            width: 100%; height: 100%; overflow: hidden; 
+            background: #0a0a0c; 
+            font-family: 'Tajawal', sans-serif; touch-action: manipulation; 
+        }
+        
+        /* ديناميكية تغيير الخلفية للسماء السوداء والنجوم */
+        .sky-bg {
+            position: absolute; top: 0; left: 0; width: 100%; height: 100%;
+            background: #000000; opacity: 0; transition: opacity 1s ease-in-out; z-index: 1; pointer-events: none;
+        }
+        .sky-bg.active { opacity: 1; }
+        
+        .stars-overlay {
+            position: absolute; top: 0; left: 0; width: 100%; height: 100%;
+            background: url('https://www.transparenttextures.com/patterns/stardust.png') repeat;
+            opacity: 0.7; z-index: 2; pointer-events: none;
+        }
+
+        /* حبل زينة المثلثات الملونة المتحرك لأسفل */
+        .bunting-rope {
+            position: absolute; top: 0; left: 0; width: 100%; 
+            display: flex; justify-content: space-around; z-index: 99; pointer-events: none;
+            transform: translateY(-100%); transition: transform 0.8s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+        }
+        .bunting-rope.drop { transform: translateY(0); }
+        .flag {
+            width: 0; height: 0;
+            border-left: 12px solid transparent; border-right: 12px solid transparent;
+            border-top: 22px solid #ff4d6d; filter: drop-shadow(0 2px 4px rgba(0,0,0,0.4));
+        }
+        .flag:nth-child(2n) { border-top-color: #ffd166; }
+        .flag:nth-child(3n) { border-top-color: #06d6a0; }
+        .flag:nth-child(4n) { border-top-color: #118ab2; }
+        .flag:nth-child(5n) { border-top-color: #ff9f1c; }
+
+        .phase {
+            position: absolute; top: 0; left: 0; width: 100%; height: 100%;
+            display: none; justify-content: center; align-items: center; flex-direction: column;
+            opacity: 0; transition: opacity 0.6s ease-in-out; overflow: hidden; padding: 20px; z-index: 5;
+        }
+        .phase.active { display: flex; opacity: 1; }
+
+        /* ================= الشاشة 1: العداد العصري الزجاجي القديم ================= */
+        #phase1 { 
+            background: radial-gradient(circle at center, #1a1c29 0%, #08090c 100%);
+            z-index: 20; 
+        }
+        .countdown-wrapper { text-align: center; z-index: 22; width: 100%; }
+        .countdown-title { font-size: 1.6rem; margin-bottom: 30px; color: #fff; text-shadow: 0 0 10px rgba(255,255,255,0.3); font-weight: 700; letter-spacing: 1px; }
+        .timer { display: flex; justify-content: center; gap: 15px; direction: ltr; }
+        .time-box { 
+            position: relative; width: 80px; height: 100px; 
+            background: rgba(255, 255, 255, 0.03); backdrop-filter: blur(12px); -webkit-backdrop-filter: blur(12px);
+            border: 1px solid rgba(255, 255, 255, 0.1); border-radius: 16px; 
+            display: flex; flex-direction: column; justify-content: center; align-items: center; 
+            box-shadow: 0 8px 32px 0 rgba(0, 0, 0, 0.37);
+        }
+        .time-box::before {
+            content: ''; position: absolute; top: 0; left: 0; width: 100%; height: 50%;
+            background: rgba(255,255,255,0.02); border-radius: 16px 16px 0 0; border-bottom: 1px solid rgba(255,255,255,0.05);
+        }
+        .time-box span.num { display: block; font-size: 2.6rem; font-weight: 900; color: #fff; text-shadow: 0 0 12px rgba(255,255,255,0.5); line-height: 1; z-index: 2; font-family: sans-serif; }
+        .time-box span.text { font-size: 0.75rem; color: #8a99ad; margin-top: 8px; z-index: 2; font-weight: 700; }
+
+        /* ================= الشاشة 2: ظهور التورتة الكبيرة المفاجئ ================= */
+        #phase2 { z-index: 15; }
+        .big-cake { width: 170px; height: 170px; transform: scale(0); opacity: 0; transition: transform 0.8s cubic-bezier(0.175, 0.885, 0.32, 1.275), opacity 0.4s; filter: drop-shadow(0 15px 25px rgba(0,0,0,0.6)); }
+        .big-cake.pop { transform: scale(1.1); opacity: 1; }
+
+        /* ================= الشاشة 3: الصفحة البيضاء والفعاليات (الرئيسية) ================= */
+        #phase3 { justify-content: center; z-index: 10; padding: 15px; }
+        
+        .white-main-card {
+            width: 100%; max-width: 340px; background: #ffffff; border-radius: 24px;
+            padding: 25px 20px; box-shadow: 0 20px 45px rgba(0,0,0,0.5);
+            display: flex; flex-direction: column; align-items: center;
+            transform: scale(0.8) translateY(50px); opacity: 0;
+            transition: transform 0.7s cubic-bezier(0.25, 1, 0.5, 1), opacity 0.7s ease;
+            z-index: 5;
+        }
+        .white-main-card.show { transform: scale(1) translateY(0); opacity: 1; }
+
+        .profile-wrapper { display: flex; justify-content: center; width: 100%; margin-top: -10px; }
+        .profile-container { position: relative; }
+        .profile-pic { 
+            width: 120px; height: 120px; border-radius: 50%; border: 4px solid #fff; 
+            box-shadow: 0 8px 20px rgba(0,0,0,0.2); object-fit: cover; 
+            transform: translateY(-500px) scale(0.3) rotate(-45deg); opacity: 0; 
+            transition: transform 0.9s cubic-bezier(0.175, 0.885, 0.32, 1.15), opacity 0.5s; 
+            z-index: 2; position: relative; 
+        }
+        .profile-pic.fly-in { transform: translateY(0) scale(1) rotate(0deg); opacity: 1; }
+        .profile-pic.float-anim { animation: float 4s ease-in-out infinite; }
+        @keyframes float { 0%, 100% { transform: translateY(0); } 50% { transform: translateY(-6px); } }
+
+        .balloon { position: absolute; width: 50px; opacity: 0; bottom: -10px; transition: all 0.8s cubic-bezier(0.25, 1, 0.5, 1); z-index: 1; }
+        .balloon-left { left: -30px; transform: rotate(-15deg); }
+        .balloon-right { right: -30px; transform: rotate(15deg) scaleX(-1); }
+        .balloon.show.balloon-left { opacity: 1; transform: rotate(-15deg) translateY(-55px); animation: floatL 3s ease-in-out infinite alternate 0.5s; }
+        .balloon.show.balloon-right { opacity: 1; transform: rotate(15deg) translateY(-55px) scaleX(-1); animation: floatR 3.5s ease-in-out infinite alternate 0.5s; }
+
+        .cake-img { width: 65px; height: 65px; opacity: 0; transform: scale(0.5); transition: all 0.6s cubic-bezier(0.175, 0.885, 0.32, 1.275); margin-top: 10px; }
+        .cake-img.show { opacity: 1; transform: scale(1); }
+
+        .main-title { font-family: 'Lilita One', cursive; font-size: 2.2rem; color: #ff4d6d; text-shadow: 1px 1px 0px #ffe5ec, 2px 2px 0px #ffb1c1; text-align: center; line-height: 1.2; min-height: 60px; margin-top: 10px; }
+        .cursor { display: inline-block; width: 3px; height: 2rem; background-color: #ff4d6d; margin-left: 3px; animation: blink 0.8s infinite; vertical-align: bottom; opacity: 0; }
+        .cursor.active { opacity: 1; }
+        @keyframes blink { 0%, 100% { opacity: 1; } 50% { opacity: 0; } }
+
+        .btn-group { display: flex; flex-direction: column; gap: 10px; margin-top: 15px; width: 100%; max-width: 260px; opacity: 0; transform: translateY(15px); transition: all 0.6s ease; pointer-events: none; }
+        .btn-group.show { opacity: 1; transform: translateY(0); pointer-events: auto; }
+        .btn { background: #ff4d6d; color: #fff; padding: 11px 18px; font-size: 0.95rem; border: none; border-radius: 20px; cursor: pointer; font-family: 'Tajawal', sans-serif; font-weight: 700; box-shadow: 0 4px 12px rgba(255,77,109,0.3); text-align: center; width: 100%; transition: transform 0.2s; }
+        .btn:active { transform: scale(0.96); }
+
+        .audio-container { width: 100%; max-width: 260px; margin-top: 12px; opacity: 0; transition: opacity 0.8s ease; }
+        .audio-container.show { opacity: 1; }
+        audio { width: 100%; height: 30px; border-radius: 8px; }
+
+        .card-overlay { position: absolute; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.85); display: none; justify-content: center; align-items: center; z-index: 100; backdrop-filter: blur(5px); opacity: 0; transition: opacity 0.4s ease; }
+        .birthday-card { width: 250px; height: 340px; position: relative; perspective: 1500px; }
+        .card-face { position: absolute; width: 100%; height: 100%; border-radius: 15px; box-shadow: 0 12px 30px rgba(0,0,0,0.5); overflow: hidden; backface-visibility: hidden; -webkit-backface-visibility: hidden; }
+        .card-inside { background: #fffcfd; padding: 20px 15px; text-align: center; display: flex; flex-direction: column; justify-content: center; align-items: center; border: 2px solid #ffe4e8; z-index: 1; }
+        .card-front { background: linear-gradient(135deg, #ff4d6d 0%, #ff758c 100%); display: flex; flex-direction: column; justify-content: center; align-items: center; transform-origin: left center; transition: transform 1.1s cubic-bezier(0.4, 0, 0.2, 1); z-index: 2; cursor: pointer; }
+        .birthday-card.open .card-front { transform: rotateY(-180deg); }
+        .card-front h2 { font-family: 'Lilita One'; font-size: 2rem; color: #fff; }
+        .close-card { position: absolute; top: 10px; right: 12px; font-size: 1.1rem; color: #aaa; cursor: pointer; padding: 5px; z-index: 10; }
+
+        /* ================= أنيميشن دمج دائرتين ومثلث للقلب الاحترافي ================= */
+        .heart-transition-overlay { position: fixed; top: 0; left: 0; width: 100%; height: 100%; z-index: 9999; display: none; align-items: center; justify-content: center; background: transparent; overflow: hidden; }
+        .heart-container { position: relative; width: 200px; height: 200px; transition: transform 0.6s cubic-bezier(0.6, -0.28, 0.735, 0.045); }
+        .h-part { position: absolute; background: #d90429; transition: transform 0.7s cubic-bezier(0.175, 0.885, 0.32, 1.275); }
+        .h-circle-left { width: 100px; height: 100px; border-radius: 50%; top: 30px; left: 10px; transform: translateX(-100vw); }
+        .h-circle-right { width: 100px; height: 100px; border-radius: 50%; top: 30px; left: 90px; transform: translateX(100vw); }
+        .h-triangle { width: 0; height: 0; border-left: 90px solid transparent; border-right: 90px solid transparent; border-top: 100px solid #d90429; top: 80px; left: 10px; background: transparent; transform: translateY(100vh); }
+        .heart-container.assemble .h-circle-left { transform: translateX(0); }
+        .heart-container.assemble .h-circle-right { transform: translateX(0); }
+        .heart-container.assemble .h-triangle { transform: translateY(0); }
+        .heart-container.explode { transform: scale(45); }
+
+        /* ================= الشاشة 4: الجوابات والرسائل السرية ================= */
+        #phase4 { background: linear-gradient(to bottom, #ff4d6d, #c9184a); z-index: 7; }
+        .envelope-container { position: absolute; width: 230px; height: 140px; z-index: 5; top: 45%; left: 50%; transform: translate(-50%, -50%); }
+        .envelope { width: 100%; height: 100%; position: relative; perspective: 1000px; }
+        .envelope-back { position: absolute; top: 0; left: 0; width: 100%; height: 100%; background: #e0d8c3; border-radius: 8px; box-shadow: 0 10px 20px rgba(0,0,0,0.4); }
+        .flap-top { position: absolute; top: 0; left: 0; width: 0; height: 0; border-left: 115px solid transparent; border-right: 115px solid transparent; border-top: 75px solid #ebdcb8; transform-origin: top; transition: transform 0.6s 0.2s; z-index: 4; filter: drop-shadow(0 4px 3px rgba(0,0,0,0.15)); }
+        .flap-bottom { position: absolute; bottom: 0; left: 0; width: 0; height: 0; border-left: 115px solid transparent; border-right: 115px solid transparent; border-bottom: 75px solid #f4e8ce; z-index: 3; }
+        .flap-left { position: absolute; top: 0; left: 0; width: 0; height: 0; border-top: 70px solid transparent; border-bottom: 70px solid transparent; border-left: 115px solid #eedeb9; z-index: 3; }
+        .flap-right { position: absolute; top: 0; right: 0; width: 0; height: 0; border-top: 70px solid transparent; border-bottom: 70px solid transparent; border-right: 115px solid #eedeb9; z-index: 3; }
+        .envelope.open .flap-top { transform: rotateX(180deg); z-index: 1; }
+        
+        .letter { position: absolute; width: 140px; min-height: 110px; background: #fffcf5; padding: 10px; border-radius: 8px; box-shadow: 0 5px 12px rgba(0,0,0,0.3); top: 15px; left: 45px; opacity: 0; transform: scale(0.4); transition: all 0.8s cubic-bezier(0.25, 1, 0.5, 1); z-index: 2; display: flex; flex-direction: column; justify-content: center; cursor: pointer; }
+        .letter-content { font-size: 0.68rem; color: #333; line-height: 1.4; text-align: center; }
+        .letter-author { margin-top: 5px; font-weight: bold; color: #d90429; font-size: 0.75rem; text-align: center; }
+        
+        .envelope.open .l-1 { opacity: 1; transform: translate(-18vw, -20vh) rotate(-7deg) scale(1.1); z-index: 15; }
+        .envelope.open .l-2 { opacity: 1; transform: translate(18vw, -9vh) rotate(6deg) scale(1.1); z-index: 16; transition-delay: 0.1s; }
+        .envelope.open .l-3 { opacity: 1; transform: translate(-16vw, 8vh) rotate(-5deg) scale(1.1); z-index: 17; transition-delay: 0.2s; }
+        .envelope.open .l-4 { opacity: 1; transform: translate(16vw, 20vh) rotate(5deg) scale(1.1); z-index: 18; transition-delay: 0.3s; }
+        .envelope.open .letter.focused { transform: translate(0, 0) rotate(0deg) scale(1.65) !important; z-index: 200 !important; box-shadow: 0 15px 35px rgba(0,0,0,0.6); border: 1.5px solid #d90429; }
+        
+        #toGalleryBtn { position: absolute; bottom: 35px; opacity: 0; pointer-events: none; transition: opacity 0.5s ease-in-out; z-index: 30; background: #fff; color: #d90429; }
+        
+        /* ================= الشاشات 5 و 6: معرض الذكريات ================= */
+        #phase5, #phase6 { background: #0c0509; z-index: 8; padding: 20px 0; justify-content: flex-start; overflow-y: auto; }
+        .gallery-title { font-family: 'Lilita One', cursive; font-size: 1.8rem; color: #ffb1c1; margin-top: 15px; margin-bottom: 10px; text-shadow: 0 0 10px rgba(255, 177, 193, 0.2); }
+        .gallery-grid { display: grid; grid-template-columns: repeat(2, 1fr); gap: 10px; width: 92%; max-width: 320px; }
+        .photo-card { background: #fff; padding: 5px; border-radius: 8px; box-shadow: 0 6px 12px rgba(0,0,0,0.5); opacity: 0; transform: translateY(15px) scale(0.9); transition: all 0.5s cubic-bezier(0.25, 1, 0.5, 1); }
+        .photo-card.show { opacity: 1; transform: translateY(0) scale(1); }
+        .photo-card img { width: 100%; height: 115px; object-fit: cover; border-radius: 5px; display: block; }
+        .gallery-footer-btn { margin-top: 15px; width: 90%; max-width: 240px; margin-bottom: 15px; }
+
+        /* ================= الشاشة 7: صفحة الرسالة الخاصة جداً والمنفصلة (النهائية) ================= */
+        #phase7 {
+            background: radial-gradient(circle at center, #1f030c 0%, #050002 100%);
+            z-index: 30; padding: 30px 20px; justify-content: flex-start; text-align: center;
+            overflow-y: auto; /* السماح بالسحب لأسفل لرؤية الصور */
+        }
+        .private-card {
+            width: 100%; max-width: 320px; background: rgba(255, 255, 255, 0.04);
+            border: 1px solid rgba(255, 77, 109, 0.2); backdrop-filter: blur(15px); -webkit-backdrop-filter: blur(15px);
+            border-radius: 24px; padding: 30px 20px; box-shadow: 0 20px 40px rgba(0,0,0,0.7);
+            transform: scale(0.9); opacity: 0; transition: all 0.8s cubic-bezier(0.34, 1.56, 0.64, 1);
+            margin: auto; margin-top: 20px;
+        }
+        #phase7.active .private-card { transform: scale(1); opacity: 1; }
+        .private-icon { font-size: 3rem; color: #ff4d6d; animation: pulse 1.5s infinite alternate; margin-bottom: 15px; display: inline-block; }
+        @keyframes pulse { 0% { transform: scale(1); filter: drop-shadow(0 0 2px #ff4d6d); } 100% { transform: scale(1.15); filter: drop-shadow(0 0 12px #ff4d6d); } }
+        .private-card h2 { color: #fff; font-size: 1.5rem; margin-bottom: 15px; font-weight: 900; }
+        .private-card p { color: #f0f2f5; font-size: 0.9rem; line-height: 1.7; text-align: justify; direction: rtl; }
+        
+    </style>
+</head>
+<body>
+
+    <div class="sky-bg" id="skyBg"><div class="stars-overlay"></div></div>
+    
+    <div class="bunting-rope" id="buntingRope">
+        <div class="flag"></div><div class="flag"></div><div class="flag"></div>
+        <div class="flag"></div><div class="flag"></div><div class="flag"></div>
+        <div class="flag"></div><div class="flag"></div><div class="flag"></div>
+    </div>
+
+    <audio id="bgMusic" loop></audio>
+
+    <div class="heart-transition-overlay" id="heartOverlay">
+        <div class="heart-container" id="heartContainer">
+            <div class="h-part h-circle-left"></div>
+            <div class="h-part h-circle-right"></div>
+            <div class="h-part h-triangle"></div>
+        </div>
+    </div>
+
+    <div id="phase1" class="phase active">
+        <div class="countdown-wrapper">
+            <h1 class="countdown-title">باقي على المفاجأة...</h1>
+            <div class="timer">
+                <div class="time-box"><span class="num" id="hours">00</span><span class="text">ساعات</span></div>
+                <div class="time-box"><span class="num" id="minutes">00</span><span class="text">دقائق</span></div>
+                <div class="time-box"><span class="num" id="seconds">03</span><span class="text">ثواني</span></div>
+            </div>
+        </div>
+    </div>
+
+    <div id="phase2" class="phase">
+        <img id="bigTransitionCake" class="big-cake" alt="تورتة مفاجأة">
+    </div>
+
+    <div id="phase3" class="phase">
+        
+        <div class="white-main-card" id="whiteCard">
+            
+            <div class="profile-wrapper">
+                <div class="profile-container">
+                    <img class="balloon balloon-left" alt="بلونة">
+                    <img class="profile-pic" id="mainLogiPic" alt="لوجي">
+                    <img class="balloon balloon-right" alt="بلونة">
+                </div>
+            </div>
+
+            <img class="cake-img" id="birthdayCake" alt="تورته صغيرة">
+
+            <h1 class="main-title"><span id="typedText"></span><span class="cursor" id="typeCursor"></span></h1>
+            
+            <div class="btn-group" id="mainButtons">
+                <button class="btn" onclick="openCard()">💌 افتحي الكارت يا لوجي</button>
+                <button class="btn" onclick="playHeartMergeTransition()" style="background: #c9184a;">❤️ في مفاجأة تانية هنا</button>
+            </div>
+
+            <div class="audio-container" id="audioBox">
+                <p style="color: #ff4d6d; font-size: 0.75rem; text-align: center; margin-bottom: 4px; font-weight: bold;">🎵 تشغيل/إيقاف الأغنية من هنا:</p>
+                <audio id="visibleAudioControls" controls></audio>
+            </div>
+        </div>
+
+        <div class="card-overlay" id="cardOverlay" onclick="closeCard(event)">
+            <div class="birthday-card" id="myCard" onclick="event.stopPropagation();">
+                <div class="card-face card-inside">
+                    <span class="close-card" onclick="closeCard(event)">✖</span>
+                    <h3 style="color:#ff4d6d; font-family:'Lilita One'; font-size: 1.2rem; margin-bottom:8px;">كل سنة وانتي طيبة!</h3>
+                    <p style="font-size: 0.78rem; line-height: 1.5; color: #444;">من يوم ما عرفتك وحياتي بقت أحلى، أنتي مش بس حبيبتي، أنتي أخت وسند حقيقي دايماً في كل الأوقات.<br><br>يا رب السنة دي تحققي كل اللي بتتمنيه ونشوفك دايماً ناجحة ومبسوطة.<br><br><b style="color: #ff4d6d;">بحبككك اووويييي💖</b></p>
+                </div>
+                <div class="card-face card-front" onclick="toggleCard(event)">
+                    <h2>To My love</h2>
+                    <p style="color:white; margin-top:12px; font-family:'Tajawal'; font-size:0.75rem; background: rgba(0,0,0,0.2); padding: 4px 12px; border-radius: 20px;">اضغطي لفتح الكارت ✨</p>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div id="phase4" class="phase">
+        <div class="envelope-container" id="envContainer">
+            <div class="envelope" id="envelopeBox">
+                <div class="envelope-back"></div>
+                <div class="letter l-1" onclick="focusLetter(this, event)"><div class="letter-content">لوجي القمر، كل سنة وأنتي منورة الدنيا وجدعة دايماً معانا. ربنا يسعد قلبك يا رب.</div><div class="letter-author">- أي توينتي</div></div>
+                <div class="letter l-2" onclick="focusLetter(this, event)"><div class="letter-content">كل سنهه وانتييي بتاعتي انا وبس وسيبك من اي توينتي ورنا ديه مش هنيفعوكي ركزي معايا انااا</div><div class="letter-author">- اناععععع</div></div>
+                <div class="letter l-3" onclick="focusLetter(this, event)"><div class="letter-content">كل سنه وانتي طيبه يلوجي مع اننا كل يوم بخاقه جديده بس فالاخر انتي اختي وكلنا صحاب</div><div class="letter-author">- بيتر</div></div>
+                <div class="letter l-4" onclick="focusLetter(this, event)"><div class="letter-content">كل سنه و انتي طيبه ي جوججج و إقبال مليون سنه و يلااا بقا اجوزي البتع ده عايزه البس فستان🙃😭</div><div class="letter-author">- رنا</div></div>
+                <div class="flap-left"></div><div class="flap-right"></div><div class="flap-bottom"></div><div class="flap-top"></div>
+            </div>
+        </div>
+        <button id="toGalleryBtn" class="btn" onclick="goToPhase5()">شوف الذكريات دي 📸</button>
+    </div>
+
+    <div id="phase5" class="phase">
+        <h1 class="gallery-title">Memories 📸</h1>
+        <div class="gallery-grid" id="photoGrid1"></div>
+        <button class="btn gallery-footer-btn" onclick="goToPhase6()">المزيد من الصور ✨</button>
+    </div>
+    
+    <div id="phase6" class="phase">
+        <h1 class="gallery-title">More Memories ✨</h1>
+        <div class="gallery-grid" id="photoGrid2"></div>
+        <button class="btn gallery-footer-btn" style="background: linear-gradient(135deg, #d90429, #ff4d6d);" onclick="goToPhase7()">اضغطي هنا لآخر مفاجأة سرية 🔒</button>
+    </div>
+
+    <div id="phase7" class="phase">
+        <div class="private-card">
+            <span class="private-icon">💖</span>
+            <h2>رسالة خاصة جداً للوجي</h2>
+            <p id="privateMessageText">
+                هنا تكتب رسالتك السرية والخاصة جداً يا فنان.. الكلمات والسطور دي متفصلة علشان لوجي لوحدها تقرأها في الصفحة دي بكل هدوء وبدون أي تشتيت، تقدر تعدلها بكل حرية وسهولة من قسم الـ CONFIG اللي في السكريبت تحت بالكامل وبراحتك!
+            </p>
+            <button class="btn" style="background: rgba(255,255,255,0.15); border: 1px solid rgba(255,255,255,0.3); color: #fff; margin-top: 25px; box-shadow: none;" onclick="goBackToMainFromPrivate()">الرجوع للرئيسية 💕</button>
+            
+            <button class="btn" style="background: linear-gradient(135deg, #d90429, #ff4d6d); margin-top: 20px; margin-bottom: 10px;" onclick="showTwoImages()">مفاجأة أخيرة 👇</button>
+
+            <div id="twoImagesContainer" style="display: none; flex-direction: column; align-items: center; gap: 30px; margin-top: 20px; width: 100%; padding-bottom: 30px;">
+                <img src="j.jpeg" alt="صورة 1" style="width: 100%; max-width: 250px; border-radius: 15px; border: 2px solid #ff4d6d; box-shadow: 0 5px 15px rgba(0,0,0,0.5);">
+                
+                <div style="width: 100%; text-align: center; color: #ffb1c1; font-size: 1.2rem; font-family: 'Tajawal', sans-serif; font-weight: bold; border: 1px dashed #ff4d6d; padding: 15px; border-radius: 10px; line-height: 1.5;">
+                    Your friends.....and your love, we love you
+                </div>
+
+                <img src="h.jpeg" alt="صورة 2" style="width: 100%; max-width: 250px; border-radius: 15px; border: 2px solid #ff4d6d; box-shadow: 0 5px 15px rgba(0,0,0,0.5);">
+            </div>
+            </div>
+    </div>
+
+    <script>
+        // ================= لوحة تحكم وتكوين محتويات وروابط الموقع بالكامل =================
+        const CONFIG = {
+            audioSrc: "1.mp3", 
+            countdownTime: 3, 
+            mainProfilePic: "r.jpeg", 
+            balloonImage: "https://cdn-icons-png.flaticon.com/512/3752/3752834.png", 
+            cakeImage: "https://cdn-icons-png.flaticon.com/512/2682/2682340.png", 
+
+             // 📸 صور الألبوم الأول
+             galleryPage2: [
+             "1.jpeg",
+             "2.jpeg",
+             "3.jpeg",
+             "4.jpeg",
+             "5.jpeg",
+            ],
+            // 📸 صور الألبوم الثاني (5 صور)
+            galleryPage1:  [               
+             "a.jpeg",
+             "b.jpeg",
+             "c.jpeg",
+             "d.jpeg",
+             "e.jpeg",
+            ],
+
+            // 🔒 نص الرسالة الخاصة جداً والمغلقة في الصفحة المستقلة الأخيرة لـ لوجي
+            specialPrivateMessage: "إلى لوجي الغالية والمميزة.. حبيت في نهاية المفاجأة دي أسيبلك رسالة من كل قلبي وبشكل خاص جداً ليكي أنتي لوحدك. أنتي شخصية نادرة جداً ووجودك في حياتنا مكسب كبير، وبصمتك وطاقتك الإيجابية بتخلي أي مكان تروحي فيه منور ومليان فرحة ودفا. بتمنالك في سنتك الجديدة دي توفيق ونجاح لا ينتهي وراحة بال وسعادة تملى قلبك الطيب ده دايماً.. عيد ميلاد سعيد يا أغلى لوجي!"
+        };
+
+        // تهيئة وإدراج جميع العناصر والبيانات تلقائياً فور التحميل لسرعة الأداء
+        function initSetup() {
+            document.getElementById('mainLogiPic').src = CONFIG.mainProfilePic;
+            document.getElementById('birthdayCake').src = CONFIG.cakeImage;
+            document.getElementById('bigTransitionCake').src = CONFIG.cakeImage;
+            document.querySelectorAll('.balloon').forEach(b => b.src = CONFIG.balloonImage);
+            document.getElementById('privateMessageText').innerText = CONFIG.specialPrivateMessage;
+
+            document.getElementById('bgMusic').src = CONFIG.audioSrc;
+            document.getElementById('visibleAudioControls').src = CONFIG.audioSrc;
+
+            const grid1 = document.getElementById('photoGrid1');
+            CONFIG.galleryPage1.forEach((src, idx) => {
+                const card = document.createElement('div'); card.className = 'photo-card';
+                if(idx === 4) card.style.gridColumn = 'span 2'; 
+                card.innerHTML = `<img src="${src}" alt="ذكرى">`; grid1.appendChild(card);
+            });
+
+            const grid2 = document.getElementById('photoGrid2');
+            CONFIG.galleryPage2.forEach((src, idx) => {
+                const card = document.createElement('div'); card.className = 'photo-card';
+                if(idx === 4) card.style.gridColumn = 'span 2';
+                card.innerHTML = `<img src="${src}" alt="ذكرى">`; grid2.appendChild(card);
+            });
+
+            startCountdown();
+        }
+        window.onload = initSetup;
+
+        // دعم التشغيل الصوتي وتخطي الحظر الذاتي للمتصفحات بأي تفاعل لمس للشاشة
+        let audioStarted = false;
+        function activateAudio() {
+            if (!audioStarted) {
+                const music = document.getElementById('bgMusic');
+                const vControls = document.getElementById('visibleAudioControls');
+                music.play().catch(() => {}); vControls.play().catch(() => {});
+                audioStarted = true;
+            }
+        }
+        document.body.addEventListener('click', activateAudio);
+        document.body.addEventListener('touchstart', activateAudio);
+
+        // آلية تشغيل العداد التنازلي التلقائي العصري
+        let timeInSeconds = CONFIG.countdownTime; 
+        function startCountdown() {
+            const countdownInterval = setInterval(() => {
+                timeInSeconds--;
+                if (timeInSeconds >= 0) {
+                    document.getElementById('seconds').innerText = timeInSeconds < 10 ? '0' + timeInSeconds : timeInSeconds;
+                }
+                if (timeInSeconds <= 0) {
+                    clearInterval(countdownInterval);
+                    triggerSkyAndCakeTransition(); 
+                }
+            }, 1000);
+        }
+
+        // تحول الخلفية للسماء السوداء بالنجوم، سقوط الزينة، وظهور التورتة الكبيرة فوراً
+        function triggerSkyAndCakeTransition() {
+            document.getElementById('phase1').classList.remove('active');
+            setTimeout(() => {
+                document.getElementById('phase1').style.display = 'none';
+                
+                // 1. تفعيل السماء السوداء والنجوم بالكامل بالخلفية
+                document.getElementById('skyBg').classList.add('active');
+                
+                // 2. إسقاط زينة المثلثات الملونة فوراً من الأعلى لتعلق
+                document.getElementById('buntingRope').classList.add('drop');
+                
+                const phase2 = document.getElementById('phase2');
+                phase2.classList.add('active');
+                
+                // 3. انبثاق التورتة الكبيرة المبهجة
+                setTimeout(() => {
+                    document.getElementById('bigTransitionCake').classList.add('pop');
+                }, 100);
+
+                // بعد ثبات المشهد الليلي والزينة والتورتة، نقوم بإظهار الصفحة البيضاء بدقة
+                setTimeout(() => {
+                    phase2.classList.remove('active');
+                    setTimeout(() => {
+                        phase2.style.display = 'none';
+                        showWhiteDashboardPhase();
+                    }, 500);
+                }, 2200);
+            }, 300);
+        }
+
+        // آلية ظهور الصفحة البيضاء المحبوبة وتتابع حركات طيران الصورة والخط البطيء جداً
+        function showWhiteDashboardPhase() {
+            const phase3 = document.getElementById('phase3');
+            phase3.style.display = 'flex';
+            phase3.offsetHeight;
+            phase3.classList.add('active');
+
+            // 1. ظهور كارت الصفحة البيضاء الرئيسي
+            setTimeout(() => {
+                document.getElementById('whiteCard').classList.add('show');
+            }, 200);
+
+            // 2. طيران واستقرار صورة لوجي الشخصية داخل الصفحة البيضاء
+            setTimeout(() => {
+                const pic = document.getElementById('mainLogiPic');
+                pic.classList.add('fly-in');
+                setTimeout(() => pic.classList.add('float-anim'), 900);
+            }, 800);
+
+            // 3. طيران البلالين الجانبية حول الصورة المرتفعة
+            setTimeout(() => {
+                document.querySelectorAll('.balloon').forEach(b => b.classList.add('show'));
+            }, 1400);
+
+            // 4. انبثاق التورتة الصغيرة التفاعلية بالداخل
+            setTimeout(() => {
+                document.getElementById('birthdayCake').classList.add('show');
+            }, 1800);
+
+            // 5. بدء تشغيل تأثير الكتابة الآلية البطيئة جداً لتشويق لوجي لقراءة الكلمات
+            setTimeout(() => {
+                document.getElementById('typeCursor').classList.add('active');
+                typeWriterSlowly("Happy<br>Birthday!", 170, () => { 
+                    setTimeout(() => {
+                        document.getElementById('mainButtons').classList.add('show');
+                        document.getElementById('audioBox').classList.add('show');
+                    }, 400);
+                });
+            }, 2300);
+        }
+
+        function typeWriterSlowly(textHTML, speed, callback) {
+            const textSpan = document.getElementById('typedText');
+            let parts = textHTML.split(/(<br>)/);
+            let chars = [];
+            parts.forEach(part => {
+                if (part === '<br>') chars.push('<br>');
+                else chars.push(...part.split(''));
+            });
+            let i = 0;
+            function type() {
+                if (i < chars.length) {
+                    textSpan.innerHTML += chars[i];
+                    i++;
+                    setTimeout(type, speed);
+                } else if (callback) callback();
+            }
+            type();
+        }
+
+        // ================= استكمال وظائف الكود (التي تم قطعها) =================
+
+        // أنيميشن دمج وفجر عناصر القلب السحري التلقائي للانتقال للجوابات المعلقة
+        function playHeartMergeTransition() {
+            document.getElementById('bgMusic').volume = 0.25; 
+
+            const overlay = document.getElementById('heartOverlay');
+            const container = document.getElementById('heartContainer');
+            
+            overlay.style.display = 'flex';
+            
+            setTimeout(() => { container.classList.add('assemble'); }, 100);
+            setTimeout(() => { container.classList.add('explode'); }, 1500);
+            
+            setTimeout(() => {
+                overlay.style.display = 'none';
+                container.classList.remove('assemble', 'explode');
+                
+                document.getElementById('phase3').classList.remove('active');
+                setTimeout(() => {
+                    document.getElementById('phase3').style.display = 'none';
+                    const phase4 = document.getElementById('phase4');
+                    phase4.style.display = 'flex';
+                    phase4.offsetHeight;
+                    phase4.classList.add('active');
+                    
+                    // فتح الظرف تدريجياً
+                    setTimeout(() => {
+                        document.getElementById('envelopeBox').classList.add('open');
+                        setTimeout(() => {
+                            const btn = document.getElementById('toGalleryBtn');
+                            btn.style.opacity = '1';
+                            btn.style.pointerEvents = 'auto';
+                        }, 1500);
+                    }, 500);
+                }, 500);
+            }, 2000);
+        }
+
+        // وظائف فتح وقفل كارت المعايدة
+        function openCard() {
+            const overlay = document.getElementById('cardOverlay');
+            overlay.style.display = 'flex';
+            setTimeout(() => { overlay.style.opacity = '1'; }, 10);
+        }
+
+        function closeCard(e) {
+            if(e) e.stopPropagation();
+            const overlay = document.getElementById('cardOverlay');
+            overlay.style.opacity = '0';
+            setTimeout(() => { 
+                overlay.style.display = 'none'; 
+                document.getElementById('myCard').classList.remove('open');
+            }, 400);
+        }
+
+        function toggleCard(e) {
+            if(e) e.stopPropagation();
+            document.getElementById('myCard').classList.toggle('open');
+        }
+
+        // إبراز الجواب عند الضغط عليه
+        function focusLetter(elem, e) {
+            e.stopPropagation();
+            document.querySelectorAll('.letter').forEach(l => l.classList.remove('focused'));
+            elem.classList.add('focused');
+        }
+
+        // إلغاء تحديد الجواب لو ضغط في أي مكان فارغ
+        document.body.addEventListener('click', (e) => {
+            if(!e.target.closest('.letter')) {
+                document.querySelectorAll('.letter').forEach(l => l.classList.remove('focused'));
+            }
+        });
+
+        // التنقل بين الشاشات
+        function goToPhase5() {
+            document.getElementById('phase4').classList.remove('active');
+            setTimeout(() => {
+                document.getElementById('phase4').style.display = 'none';
+                const p5 = document.getElementById('phase5');
+                p5.style.display = 'flex'; p5.offsetHeight; p5.classList.add('active');
+                animateGallery('photoGrid1');
+            }, 500);
+        }
+
+        function goToPhase6() {
+            document.getElementById('phase5').classList.remove('active');
+            setTimeout(() => {
+                document.getElementById('phase5').style.display = 'none';
+                const p6 = document.getElementById('phase6');
+                p6.style.display = 'flex'; p6.offsetHeight; p6.classList.add('active');
+                animateGallery('photoGrid2');
+            }, 500);
+        }
+
+        function animateGallery(gridId) {
+            const cards = document.querySelectorAll(`#${gridId} .photo-card`);
+            cards.forEach((card, idx) => {
+                setTimeout(() => { card.classList.add('show'); }, idx * 150);
+            });
+        }
+
+        function goToPhase7() {
+            document.getElementById('phase6').classList.remove('active');
+            setTimeout(() => {
+                document.getElementById('phase6').style.display = 'none';
+                const p7 = document.getElementById('phase7');
+                p7.style.display = 'flex'; p7.offsetHeight; p7.classList.add('active');
+            }, 500);
+        }
+
+        function goBackToMainFromPrivate() {
+            document.getElementById('phase7').classList.remove('active');
+            setTimeout(() => {
+                document.getElementById('phase7').style.display = 'none';
+                const p3 = document.getElementById('phase3');
+                p3.style.display = 'flex'; p3.offsetHeight; p3.classList.add('active');
+            }, 500);
+        }
+
+        // ================= وظيفة إظهار الصورتين الجداد في نهاية الصفحة =================
+        function showTwoImages() {
+            const container = document.getElementById('twoImagesContainer');
+            const phase7 = document.getElementById('phase7');
+            
+            if(container.style.display === 'none') {
+                container.style.display = 'flex';
+                // ننزل بالصفحة لتحت عشان يشوف الصور بوضوح
+                setTimeout(() => {
+                    phase7.scrollTo({ top: phase7.scrollHeight, behavior: 'smooth' });
+                }, 100);
+            } else {
+                container.style.display = 'none';
+            }
+        }
+    </script>
+</body>
+</html>
