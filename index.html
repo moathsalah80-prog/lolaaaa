@@ -153,10 +153,7 @@
         .balloon.show.balloon-left { opacity: 1; transform: rotate(-15deg) translateY(-55px); animation: floatL 3s ease-in-out infinite alternate 0.5s; }
         .balloon.show.balloon-right { opacity: 1; transform: rotate(15deg) translateY(-55px) scaleX(-1); animation: floatR 3.5s ease-in-out infinite alternate 0.5s; }
 
-        .cake-img { width: 65px; height: 65px; opacity: 0; transform: scale(0.5); transition: all 0.6s cubic-bezier(0.175, 0.885, 0.32, 1.275); margin-top: 10px; }
-        .cake-img.show { opacity: 1; transform: scale(1); }
-
-        .main-title { font-family: 'Lilita One', cursive; font-size: 2.2rem; color: #ff4d6d; text-shadow: 1px 1px 0px #ffe5ec, 2px 2px 0px #ffb1c1; text-align: center; line-height: 1.2; min-height: 60px; margin-top: 10px; }
+        .main-title { font-family: 'Lilita One', cursive; font-size: 2.2rem; color: #ff4d6d; text-shadow: 1px 1px 0px #ffe5ec, 2px 2px 0px #ffb1c1; text-align: center; line-height: 1.2; min-height: 60px; margin-top: 20px; }
         .cursor { display: inline-block; width: 3px; height: 2rem; background-color: #ff4d6d; margin-left: 3px; animation: blink 0.8s infinite; vertical-align: bottom; opacity: 0; }
         .cursor.active { opacity: 1; }
         @keyframes blink { 0%, 100% { opacity: 1; } 50% { opacity: 0; } }
@@ -253,7 +250,7 @@
         <div class="flag"></div><div class="flag"></div><div class="flag"></div>
     </div>
 
-    <audio id="bgMusic" loop></audio>
+    <audio id="bgMusic" loop autoplay></audio>
 
     <div class="heart-transition-overlay" id="heartOverlay">
         <div class="heart-container" id="heartContainer">
@@ -293,8 +290,6 @@
                 </div>
             </div>
 
-            <img class="cake-img" id="birthdayCake" alt="تورته صغيرة">
-
             <h1 class="main-title"><span id="typedText"></span><span class="cursor" id="typeCursor"></span></h1>
             
             <div class="btn-group" id="mainButtons">
@@ -304,7 +299,7 @@
 
             <div class="audio-container" id="audioBox">
                 <p style="color: #ff4d6d; font-size: 0.75rem; text-align: center; margin-bottom: 4px; font-weight: bold;">🎵 تشغيل/إيقاف الأغنية من هنا:</p>
-                <audio id="visibleAudioControls" controls></audio>
+                <audio id="visibleAudioControls" controls autoplay></audio>
             </div>
         </div>
 
@@ -405,13 +400,18 @@
         // تهيئة وإدراج جميع العناصر والبيانات تلقائياً فور التحميل
         function initSetup() {
             document.getElementById('mainLogiPic').src = CONFIG.mainProfilePic;
-            document.getElementById('birthdayCake').src = CONFIG.cakeImage;
             document.getElementById('bigTransitionCake').src = CONFIG.cakeImage;
             document.querySelectorAll('.balloon').forEach(b => b.src = CONFIG.balloonImage);
             document.getElementById('privateMessageText').innerText = CONFIG.specialPrivateMessage;
 
             document.getElementById('bgMusic').src = CONFIG.audioSrc;
             document.getElementById('visibleAudioControls').src = CONFIG.audioSrc;
+
+            // محاولة التشغيل التلقائي للصوت
+            const music = document.getElementById('bgMusic');
+            music.play().catch(() => {
+                console.log("المتصفح يمنع التشغيل التلقائي حتى يلمس المستخدم الشاشة، ستعمل الأغنية عند أول لمسة.");
+            });
 
             const grid1 = document.getElementById('photoGrid1');
             CONFIG.galleryPage1.forEach((src, idx) => {
@@ -486,109 +486,79 @@
             countdownInterval = setInterval(updateTimer, 1000);
         }
 
-        // دالة التحقق من كلمة المرور السرية وإلغائها التلقائي
+        // دالة التحقق من كلمة المرور السرية
         function checkPassword() {
-            if (isCountdownFinished) return; // الحماية في حال انتهى العداد تماماً
+            if (isCountdownFinished) return; 
             
             const userInput = document.getElementById('passwordInput').value.trim();
-            if (userInput === "بحبك") {
+            // تم تغيير كلمة المرور هنا لـ 7777777
+            if (userInput === "7777777") {
                 clearInterval(countdownInterval);
                 const pwdContainer = document.getElementById('passwordContainer');
                 if(pwdContainer) pwdContainer.remove();
                 triggerSkyAndCakeTransition();
             } else {
-                alert("الباسورد مش مظبوط يا لوجي! ركزي كدة 💖");
+                alert("كلمة السر غلط يا لوجي، حاولي تاني! 😅");
             }
         }
 
-        // تحول الخلفية للسماء السوداء بالنجوم، سقوط الزينة، وظهور التورتة الكبيرة فوراً
+        // تكملة الدوال الناقصة لانتقال الشاشات بشكل سليم
         function triggerSkyAndCakeTransition() {
             document.getElementById('phase1').classList.remove('active');
+            document.getElementById('skyBg').classList.add('active');
+            
+            const phase2 = document.getElementById('phase2');
+            phase2.classList.add('active');
+            
             setTimeout(() => {
-                document.getElementById('phase1').style.display = 'none';
-                document.getElementById('skyBg').classList.add('active');
-                document.getElementById('buntingRope').classList.add('drop');
-                
-                const phase2 = document.getElementById('phase2');
-                phase2.classList.add('active');
+                const bigCake = document.getElementById('bigTransitionCake');
+                bigCake.classList.add('pop');
                 
                 setTimeout(() => {
-                    document.getElementById('bigTransitionCake').classList.add('pop');
-                }, 100);
-
-                setTimeout(() => {
+                    bigCake.classList.remove('pop');
                     phase2.classList.remove('active');
-                    setTimeout(() => {
-                        phase2.style.display = 'none';
-                        showWhiteDashboardPhase();
-                    }, 500);
-                }, 2200);
-            }, 300);
+                    goToPhase3();
+                }, 2000);
+            }, 100);
         }
 
-        // آلية ظهور الصفحة البيضاء المحبوبة وتتابع حركات طيران الصورة والخط البطيء جداً
-        function showWhiteDashboardPhase() {
-            const phase3 = document.getElementById('phase3');
-            phase3.style.display = 'flex';
-            phase3.offsetHeight;
-            phase3.classList.add('active');
+        function goToPhase3() {
+            document.getElementById('phase3').classList.add('active');
+            
+            setTimeout(() => {
+                document.getElementById('buntingRope').classList.add('drop');
+            }, 300);
 
             setTimeout(() => {
                 document.getElementById('whiteCard').classList.add('show');
-            }, 200);
-
-            setTimeout(() => {
-                const pic = document.getElementById('mainLogiPic');
-                pic.classList.add('fly-in');
-                setTimeout(() => pic.classList.add('float-anim'), 900);
-            }, 800);
-
-            setTimeout(() => {
-                document.querySelectorAll('.balloon').forEach(b => b.classList.add('show'));
-            }, 1400);
-
-            setTimeout(() => {
-                document.getElementById('birthdayCake').classList.add('show');
-            }, 1800);
-
-            setTimeout(() => {
-                document.getElementById('typeCursor').classList.add('active');
-                typeWriterSlowly("Happy<br>Birthday!", 170, () => { 
+                document.getElementById('mainLogiPic').classList.add('fly-in');
+                
+                setTimeout(() => {
+                    document.getElementById('mainLogiPic').classList.add('float-anim');
+                    document.querySelectorAll('.balloon').forEach(b => b.classList.add('show'));
+                    
+                    typeWriter();
+                    
                     setTimeout(() => {
                         document.getElementById('mainButtons').classList.add('show');
                         document.getElementById('audioBox').classList.add('show');
-                    }, 400);
-                });
-            }, 2300);
+                    }, 1500);
+                }, 900);
+            }, 800);
         }
 
-        function typeWriterSlowly(textHTML, speed, callback) {
-            const textSpan = document.getElementById('typedText');
-            let parts = textHTML.split(/(<br>)/);
-            let chars = [];
-            parts.forEach(part => {
-                if (part === '<br>') chars.push('<br>');
-                else chars.push(...part.split(''));
-            });
-            
-            let i = 0;
-            function type() {
-                if (i < chars.length) {
-                    if (chars[i] === '<br>') {
-                        textSpan.innerHTML += '<br>';
-                    } else {
-                        textSpan.innerHTML += chars[i];
-                    }
-                    i++;
-                    setTimeout(type, speed);
-                } else {
-                    if (callback) callback();
-                }
+        const textToType = "Happy Birthday Logi 💖";
+        let typeIndex = 0;
+        function typeWriter() {
+            if (typeIndex < textToType.length) {
+                document.getElementById('typedText').innerHTML += textToType.charAt(typeIndex);
+                typeIndex++;
+                setTimeout(typeWriter, 100);
+            } else {
+                document.getElementById('typeCursor').classList.remove('active');
             }
-            type();
         }
 
-        // إدارة فتح وإغلاق كارت المعايدة
         function openCard() {
             document.getElementById('cardOverlay').style.display = 'flex';
             setTimeout(() => {
@@ -596,8 +566,7 @@
             }, 10);
         }
 
-        function closeCard(event) {
-            if(event) event.stopPropagation();
+        function closeCard(e) {
             document.getElementById('cardOverlay').style.opacity = '0';
             setTimeout(() => {
                 document.getElementById('cardOverlay').style.display = 'none';
@@ -605,107 +574,92 @@
             }, 400);
         }
 
-        function toggleCard(event) {
-            if(event) event.stopPropagation();
+        function toggleCard(e) {
+            e.stopPropagation();
             document.getElementById('myCard').classList.toggle('open');
         }
 
-        // تأثير تجميع أجزاء القلب الاحترافي والانتقال لشاشة الرسائل السرية
         function playHeartMergeTransition() {
+            document.getElementById('phase3').classList.remove('active');
+            document.getElementById('buntingRope').classList.remove('drop');
+            
             const overlay = document.getElementById('heartOverlay');
             const container = document.getElementById('heartContainer');
+            
             overlay.style.display = 'flex';
             
-            setTimeout(() => { container.classList.add('assemble'); }, 100);
-            setTimeout(() => { container.classList.add('explode'); }, 1200);
-            
             setTimeout(() => {
-                document.getElementById('phase3').classList.remove('active');
-                document.getElementById('phase3').style.display = 'none';
-                
-                document.getElementById('phase4').classList.add('active');
-                overlay.style.display = 'none';
+                container.classList.add('assemble');
                 
                 setTimeout(() => {
-                    document.getElementById('envelopeBox').classList.add('open');
+                    container.classList.add('explode');
+                    
                     setTimeout(() => {
-                        const btn = document.getElementById('toGalleryBtn');
-                        btn.style.opacity = '1';
-                        btn.style.pointerEvents = 'auto';
-                    }, 1500);
-                }, 600);
-            }, 1800);
+                        overlay.style.display = 'none';
+                        container.classList.remove('assemble', 'explode');
+                        goToPhase4();
+                    }, 600);
+                }, 1500);
+            }, 100);
         }
 
-        // إبراز وعرض الخطابات عند الضغط عليها
-        function focusLetter(el, event) {
-            if(event) event.stopPropagation();
-            const isFocused = el.classList.contains('focused');
+        function goToPhase4() {
+            document.getElementById('phase4').classList.add('active');
+            setTimeout(() => {
+                document.getElementById('envelopeBox').classList.add('open');
+                setTimeout(() => {
+                    document.getElementById('toGalleryBtn').style.opacity = '1';
+                    document.getElementById('toGalleryBtn').style.pointerEvents = 'auto';
+                }, 1500);
+            }, 800);
+        }
+
+        function focusLetter(elem, e) {
+            e.stopPropagation();
             document.querySelectorAll('.letter').forEach(l => l.classList.remove('focused'));
-            if (!isFocused) {
-                el.classList.add('focused');
-            }
+            elem.classList.add('focused');
         }
 
-        document.addEventListener('click', () => {
+        document.getElementById('phase4').addEventListener('click', () => {
             document.querySelectorAll('.letter').forEach(l => l.classList.remove('focused'));
         });
 
-        // دوال التنقل المتبقية بين صفحات الألبومات والرسالة النهائية
         function goToPhase5() {
             document.getElementById('phase4').classList.remove('active');
-            document.getElementById('phase4').style.display = 'none';
-            
-            const p5 = document.getElementById('phase5');
-            p5.style.display = 'flex';
+            document.getElementById('phase5').classList.add('active');
             setTimeout(() => {
-                p5.classList.add('active');
                 document.querySelectorAll('#photoGrid1 .photo-card').forEach((card, idx) => {
                     setTimeout(() => card.classList.add('show'), idx * 150);
                 });
-            }, 50);
+            }, 300);
         }
 
         function goToPhase6() {
             document.getElementById('phase5').classList.remove('active');
-            document.getElementById('phase5').style.display = 'none';
-            
-            const p6 = document.getElementById('phase6');
-            p6.style.display = 'flex';
+            document.getElementById('phase6').classList.add('active');
             setTimeout(() => {
-                p6.classList.add('active');
                 document.querySelectorAll('#photoGrid2 .photo-card').forEach((card, idx) => {
                     setTimeout(() => card.classList.add('show'), idx * 150);
                 });
-            }, 50);
+            }, 300);
         }
 
         function goToPhase7() {
             document.getElementById('phase6').classList.remove('active');
-            document.getElementById('phase6').style.display = 'none';
-            
-            const p7 = document.getElementById('phase7');
-            p7.style.display = 'flex';
-            setTimeout(() => { p7.classList.add('active'); }, 50);
+            document.getElementById('phase7').classList.add('active');
         }
 
         function goBackToMainFromPrivate() {
             document.getElementById('phase7').classList.remove('active');
-            document.getElementById('phase7').style.display = 'none';
-            
-            const p3 = document.getElementById('phase3');
-            p3.style.display = 'flex';
-            setTimeout(() => { p3.classList.add('active'); }, 50);
+            goToPhase3();
         }
 
         function showTwoImages() {
             const container = document.getElementById('twoImagesContainer');
-            if (container.style.display === 'none' || container.style.display === '') {
-                container.style.display = 'flex';
-                setTimeout(() => { container.scrollIntoView({ behavior: 'smooth' }); }, 100);
-            } else {
-                container.style.display = 'none';
-            }
+            container.style.display = container.style.display === 'none' ? 'flex' : 'none';
+            setTimeout(() => {
+                document.getElementById('phase7').scrollTop = document.getElementById('phase7').scrollHeight;
+            }, 100);
         }
     </script>
 </body>
